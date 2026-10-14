@@ -4,10 +4,17 @@ Proyecto educativo de 2.o de Bachillerato.
 Usa programacion estructurada: solo funciones y una lista de diccionarios.
 Cada contacto es un diccionario: {"nombre": ..., "telefono": ...}.
 El telefono se guarda como texto para conservar ceros y el prefijo +34.
+Los datos se guardan en una hoja de calculo Excel (.xlsx)
+con dos columnas: nombre | telefono.
 """
 
-RUTA_DATOS = "data/contactos.txt"
-SEPARADOR = ";"
+import openpyxl
+
+
+RUTA_DATOS = "data/contactos.xlsx"
+NOMBRE_HOJA = "Contactos"
+TITULO_NOMBRE = "nombre"
+TITULO_TELEFONO = "telefono"
 
 
 def mostrar_menu():
@@ -37,6 +44,20 @@ def pedir_telefono():
     """Pide un telefono y lo devuelve sin espacios delante ni detras."""
     telefono = input("Telefono: ")
     return telefono.strip()
+
+
+def pedir_orden():
+    """Pregunta como ordenar y devuelve True si es descendente.
+
+    1 = ascendente (A-Z), 2 = descendente (Z-A).
+    Si se pulsa Enter o algo no valido, usa ascendente.
+    """
+    print("Orden: 1. Ascendente (A-Z)  2. Descendente (Z-A)")
+    respuesta = input("Elige el orden [1]: ")
+    respuesta = respuesta.strip()
+    if respuesta == "2":
+        return True
+    return False
 
 
 def crear_contacto(nombre, telefono):
@@ -91,13 +112,29 @@ def eliminar_contacto(agenda, nombre):
     return False
 
 
-def mostrar_contactos(agenda):
-    """Muestra todos los contactos de la agenda por pantalla."""
+def ordenar_contactos(agenda, descendente=False):
+    """Devuelve una lista nueva con los contactos ordenados por nombre.
+
+    No distingue mayusculas. Si descendente es True, ordena de Z a A.
+    La lista original no se modifica.
+    """
+    return sorted(agenda, key=lambda c: c["nombre"].lower(), reverse=descendente)
+
+
+def mostrar_contactos(agenda, descendente=False):
+    """Muestra todos los contactos de la agenda por pantalla, ordenados.
+
+    Por defecto orden ascendente (A-Z). Con descendente=True, de Z a A.
+    """
     if len(agenda) == 0:
         print("La agenda esta vacia.")
         return
-    print("\nContactos:")
-    for contacto in agenda:
+    ordenados = ordenar_contactos(agenda, descendente)
+    if descendente:
+        print("\nContactos (Z-A):")
+    else:
+        print("\nContactos (A-Z):")
+    for contacto in ordenados:
         print("- " + contacto["nombre"] + ": " + contacto["telefono"])
 
 
@@ -111,39 +148,62 @@ def mostrar_lista(contactos):
 
 
 def guardar_contactos(agenda, ruta=RUTA_DATOS):
-    """Guarda la agenda en un fichero de texto.
+    """Guarda la agenda en una hoja de calculo Excel (.xlsx).
 
-    Cada linea tiene el formato: nombre;telefono
+    La hoja tiene dos columnas: nombre | telefono.
+    La primera fila es la cabecera. El telefono se guarda como texto.
     """
-    with open(ruta, "w", encoding="utf-8") as fichero:
-        for contacto in agenda:
-            linea = contacto["nombre"] + SEPARADOR + contacto["telefono"] + "\n"
-            fichero.write(linea)
+    libro = openpyxl.Workbook()
+    hoja = libro.active
+    hoja.title = NOMBRE_HOJA
+    hoja.append([TITULO_NOMBRE, TITULO_TELEFONO])
+    for contacto in agenda:
+        hoja.append([contacto["nombre"], str(contacto["telefono"])])
+    # Formato texto en la columna del telefono (columna B).
+    for fila in range(2, hoja.max_row + 1):
+        hoja.cell(row=fila, column=2).number_format = "@"
+    # Ajuste sencillo del ancho de columnas.
+    hoja.column_dimensions["A"].width = 20
+    hoja.column_dimensions["B"].width = 18
+    libro.save(ruta)
 
 
 def cargar_contactos(ruta=RUTA_DATOS):
-    """Carga la agenda desde un fichero de texto.
+    """Carga la agenda desde una hoja de calculo Excel (.xlsx).
 
     Si el fichero no existe, devuelve una lista vacia sin dar error.
-    Las lineas mal formadas se ignoran.
+    Se salta la cabecera y se ignoran las filas vacias o incompletas.
     """
     agenda = []
     try:
-        with open(ruta, "r", encoding="utf-8") as fichero:
-            for linea in fichero:
-                linea = linea.strip()
-                if linea == "":
-                    continue
-                partes = linea.split(SEPARADOR)
-                if len(partes) != 2:
-                    continue
-                nombre = partes[0].strip()
-                telefono = partes[1].strip()
-                if nombre == "" or telefono == "":
-                    continue
-                agenda.append(crear_contacto(nombre, telefono))
+        libro = openpyxl.load_workbook(ruta)
     except FileNotFoundError:
-        agenda = []
+        return []
+    if NOMBRE_HOJA in libro.sheetnames:
+        hoja = libro[NOMBRE_HOJA]
+    else:
+        hoja = libro.active
+    primera = True
+    for fila in hoja.iter_rows(values_only=True):
+        if primera:
+            primera = False
+            continue
+        if fila is None:
+            continue
+        if len(fila) < 2:
+            continue
+        nombre = fila[0]
+        telefono = fila[1]
+        if nombre is None or telefono is None:
+            continue
+        nombre = str(nombre).strip()
+        telefono = str(telefono).strip()
+        if nombre == "" or telefono == "":
+            continue
+        # Ignorar la cabecera si aparece en otra hoja sin titulo.
+        if nombre.lower() == TITULO_NOMBRE and telefono.lower() == TITULO_TELEFONO:
+            continue
+        agenda.append(crear_contacto(nombre, telefono))
     return agenda
 
 
@@ -180,7 +240,8 @@ def main():
             else:
                 print("No se ha encontrado ese contacto.")
         elif opcion == "5":
-            mostrar_contactos(agenda)
+            descendente = pedir_orden()
+            mostrar_contactos(agenda, descendente)
         elif opcion == "0":
             guardar_contactos(agenda)
             print("Agenda guardada. Hasta pronto.")

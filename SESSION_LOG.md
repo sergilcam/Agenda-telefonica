@@ -35,3 +35,29 @@ Implementar la versión 1 aprobada en el plan.
 ### Pendiente
 - Instalar pip/pytest y ejecutar la suite.
 - Commit inicial y commit de la v1 en Git.
+
+## Sesión 3 - 2026-10-14
+### Objetivo
+Guardar en hoja de cálculo `.xlsx` y mostrar ordenado A-Z / Z-A.
+
+### Realizado
+- Instalado pip para usuario y `openpyxl` + `pytest`.
+- Añadida dependencia `openpyxl` en `requeriments.txt`.
+- `src/agenda.py`: `guardar_contactos`/`cargar_contactos` con
+  hoja `Contactos` (columnas `nombre | telefono`, teléfono como texto);
+  nuevas `ordenar_contactos` y `pedir_orden`; opción 5 pregunta A-Z/Z-A.
+- `tests/test_agenda.py`: 15 pruebas (cabecera y 2 columnas, A-Z, Z-A,
+  mayúsculas, mostrar ordenado).
+- Migrados `pepe` y `juan` de `data/contactos.txt` a `data/contactos.xlsx`.
+- Actualizados `README.md`, `CHANGELOG.md` y `TODO.md`.
+
+### Comprobaciones
+- `python3 -m py_compile src/agenda.py`: OK.
+- `python -m pytest -q`: 15 passed.
+- Excel verificado: hoja `Contactos`, A1=nombre, B1=telefono,
+  B2 como texto `654321789`, 3 filas.
+- Menú opción 5 con `1`: muestra `juan` antes que `pepe` (A-Z).
+- Menú opción 5 con `2`: muestra `pepe` antes que `juan` (Z-A).
+
+### Pendiente
+- Commit de la v2 en Git.

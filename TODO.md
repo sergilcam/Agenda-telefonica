@@ -1,12 +1,12 @@
  # Plan y tareas
 
 ## En curso
-- [ ] Probar con pytest cuando haya pip disponible.
+- [ ] Redactar documentación básica.
+- [ ] Commit de la v2 en Git.
 
 ## Pendientes
-- [ ] Redactar documentación básica.
-- [ ] Inicializar Git.
-- [ ] Actualizar pruebas.
+- [ ] Ninguno por ahora.
+
 ## Terminadas
 - [x] Crear estructura inicial.
 - [x] Crear pruebas.
@@ -19,4 +19,8 @@
 - [x] Eliminar contactos.
 - [x] Mostrar contactos.
 - [x] Guardar y cargar datos (data/contactos.txt).
+- [x] Instalar pip/pytest/openpyxl y ejecutar la suite (15 pruebas OK).
+- [x] Guardar y cargar datos en hoja de cálculo (data/contactos.xlsx).
+- [x] Mostrar contactos ordenados A-Z / Z-A.
+- [x] Migrar contactos.txt (pepe, juan) a contactos.xlsx.
 

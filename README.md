@@ -3,14 +3,19 @@
 ## Objetivo
 Crear una aplicación de consola en Python para gestionar contactos.
 
-## Funcionalidades de la versión 1
+## Funcionalidades de la versión 2
 - Crear el menú
 - Añadir contactos.
 - Buscar contactos por nombre.
 - Buscar contactos por numero
 - Eliminar contactos.
-- Mostrar todos los contactos.
-- Guardar y cargar contactos desde contactos.txt.
+- Mostrar todos los contactos ordenados A-Z o Z-A.
+- Guardar y cargar contactos desde contactos.xlsx (hoja Contactos, columnas nombre | telefono).
+
+## Instalación
+```bash
+pip install -r requeriments.txt
+```
 
 ## Restricciones didácticas
 - Programación estructurada.
